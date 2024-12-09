@@ -1,7 +1,17 @@
 const express = require('express');
-const { comprarTokens, actualizarFase,costotoken } = require('../controllers/preventacontroller');
+const { comprarTokens, actualizarFase,costotoken,registro } = require('../controllers/preventacontroller');
 const router = express.Router();
 
+
+router.post('/registro', async (req, res) => {
+  const params = req.body;
+  try {
+    const Registro = await registro(params);
+    res.json({ mensaje: `registro exitoso.` });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 // Ruta para comprar tokens
 router.post('/comprarTokens', async (req, res) => {
   const {  cantidadTokens } = req.body;

@@ -1,5 +1,25 @@
 const Preventa = require('../models/basedatostoken');
+const User = require('../models/user')
 
+
+async function registro(params) {
+  try{
+    console.log("datooooooooooos",params.num_id)
+    let num_id = params.num_id
+   
+    const existe = await User.findOne({ num_id});
+    if(existe==null){
+      const datos=await User.create({
+        nombres_completos:params.nombres_completos,
+        descripcion:"nomaluser",
+        wallet:params.wallet,
+        num_id:num_id
+      })
+    }
+  }catch (error) {
+    console.error('Error al registrar user:', error.message);
+  }
+}
 
 
 async function costotoken(cantidadTokens) {
@@ -15,7 +35,8 @@ async function costotoken(cantidadTokens) {
             const precioFinal = parseFloat(preventa.preciofin);
             const aumentoPorUnidad = (precioFinal - precioInicial) / cantidadTotalObjetos;
             let precioTotal = 0;
-            for (let i = 0; i < cantidadTokens; i++) {
+            if(cantidadTokens<=preventa.tokensDisponibles){
+              for (let i = 0; i < cantidadTokens; i++) {
        
                 const unidadesVendidas = preventa.tokensVendidos + i;
               
@@ -23,6 +44,10 @@ async function costotoken(cantidadTokens) {
                 precioTotal += precioUnitario;
               }
               return precioTotal
+            }else{
+              return "esa cantidad de tokens supera la disponible para la fase actual"
+            }
+          
           }
 
 
@@ -32,8 +57,10 @@ async function costotoken(cantidadTokens) {
     
 }
 
-async function comprarTokens( cantidadTokens) {
+async function comprarTokens( comision,user,cantidadTokens) {
     try {
+
+
       // Validar que cantidadTokens sea positivo
       if (cantidadTokens <= 0) {
         throw new Error('La cantidad de tokens debe ser mayor a 0');
@@ -99,5 +126,6 @@ async function actualizarFase() {
 module.exports = {
   comprarTokens,
   actualizarFase,
-  costotoken
+  costotoken,
+  registro
 };
