@@ -1,27 +1,32 @@
-const Preventa = require('../models/basedatostoken');
-const User = require('../models/user')
+const Fases = require('../models/basedatostoken');
+const User = require('../models/user');
+const { param } = require('../routes/preventaRoutes');
 
-
+//function que permite regitrar o logear al usuario 
 async function registro(params) {
-  try{
-    console.log("datooooooooooos",params.num_id)
-    let num_id = params.num_id
-   
-    const existe = await User.findOne({ num_id});
-    if(existe==null){
-      const datos=await User.create({
-        nombres_completos:params.nombres_completos,
-        descripcion:"nomaluser",
-        wallet:params.wallet,
-        num_id:num_id
-      })
+  try {
+    let wallet = params.wallet;
+
+    const existe = await User.findOne({ wallet });
+    if (existe == null) {
+      const datos = await User.create({
+        nombres_completos: params.nombres_completos,
+        descripcion: "nomaluser",
+        wallet: params.wallet,
+        num_id: params.num_id, 
+        referido: params.referido
+      });
+      return datos; // Retornar el objeto recién creado si no existía
+    } else {
+      return existe; // Retornar el objeto existente
     }
-  }catch (error) {
+  } catch (error) {
     console.error('Error al registrar user:', error.message);
+    throw error; 
   }
 }
 
-
+//calcular valor del token actual
 async function costotoken(cantidadTokens) {
     try{
         if (cantidadTokens <= 0) {
@@ -29,21 +34,24 @@ async function costotoken(cantidadTokens) {
           }else 
           {
             const faseActiva=true;
-            const preventa = await Preventa.findOne({ faseActiva });
-            const cantidadTotalObjetos = preventa.cantidadTotal;
-            const precioInicial = parseFloat(preventa.precioini);
-            const precioFinal = parseFloat(preventa.preciofin);
+            const fases = await Fases.findOne({ faseActiva });
+            const cantidadTotalObjetos = fases.cantidadTotal;
+            const precioInicial = parseFloat(fases.precioini);
+            const precioFinal = parseFloat(fases.preciofin);
             const aumentoPorUnidad = (precioFinal - precioInicial) / cantidadTotalObjetos;
             let precioTotal = 0;
-            if(cantidadTokens<=preventa.tokensDisponibles){
+            if(cantidadTokens<=fases.tokensDisponibles){
               for (let i = 0; i < cantidadTokens; i++) {
        
-                const unidadesVendidas = preventa.tokensVendidos + i;
+                const unidadesVendidas = fases.tokensVendidos + i;
               
                 const precioUnitario = precioInicial + aumentoPorUnidad * unidadesVendidas;
                 precioTotal += precioUnitario;
               }
-              return precioTotal
+              const total={
+                precioTotal,cantidadTokens
+              }
+              return total
             }else{
               return "esa cantidad de tokens supera la disponible para la fase actual"
             }
@@ -57,47 +65,62 @@ async function costotoken(cantidadTokens) {
     
 }
 
-async function comprarTokens( comision,user,cantidadTokens) {
+async function comprarTokens( params) {
     try {
 
-
+console.log(params)
       // Validar que cantidadTokens sea positivo
-      if (cantidadTokens <= 0) {
+      if (params.cantidadTokens <= 0) {
         throw new Error('La cantidad de tokens debe ser mayor a 0');
       }
   const faseActiva=true;
-      // Obtener la fase de la preventa desde la base de datos
-      const preventa = await Preventa.findOne({ faseActiva });
-  
-     
-      if ( preventa.tokensDisponibles  < cantidadTokens) {
+      // Obtener la fase de la Fases desde la base de datos
+      const fases = await Fases.findOne({ faseActiva });
+      if ( fases.tokensDisponibles  < params.cantidadTokens) {
         throw new Error('No hay suficientes tokens disponibles en esta fase');
       }
       // Variables necesarias para el cálculo del precio
-      const cantidadTotalObjetos = preventa.cantidadTotal;
-      const precioInicial = parseFloat(preventa.precioini);
-      const precioFinal = parseFloat(preventa.preciofin);
+      const cantidadTotalObjetos = fases.cantidadTotal;
+      const precioInicial = parseFloat(fases.precioini);
+      const precioFinal = parseFloat(fases.preciofin);
       const aumentoPorUnidad = (precioFinal - precioInicial) / cantidadTotalObjetos;
-
-      console.log("preventa1 ",  cantidadTokens )
       // Calcular el precio total de los tokens a comprar
       let precioTotal = 0;
-      for (let i = 0; i < cantidadTokens; i++) {
-       
-        const unidadesVendidas = preventa.tokensVendidos + i;
-      
+      for (let i = 0; i < params.cantidadTokens; i++) {
+        const unidadesVendidas = fases.tokensVendidos + i;
         const precioUnitario = precioInicial + aumentoPorUnidad * unidadesVendidas;
         precioTotal += precioUnitario;
       }
-      console.log("preventa ",  cantidadTokens )
       // Actualizar los valores en la base de datos
-      preventa.tokensVendidos = preventa.tokensVendidos+cantidadTokens;
-      preventa.precioactual = precioInicial + aumentoPorUnidad * preventa.tokensVendidos; 
-      preventa.tokensDisponibles=preventa.tokensDisponibles-cantidadTokens
+      fases.tokensVendidos = fases.tokensVendidos+params.cantidadTokens;
+      fases.precioactual = precioInicial + aumentoPorUnidad * fases.tokensVendidos; 
+      fases.tokensDisponibles=fases.tokensDisponibles-params.cantidadTokens
 
-      await preventa.save();
-  
-      console.log(`Compra exitosa. Tokens vendidos en esta fase: ${preventa.tokensVendidos}`);
+      await fases.save();
+      if (fases.tokensDisponibles == 0) {
+        try {
+         
+          await Fases.updateMany({}, { $set: { faseActiva: false } });
+      
+         
+          const nuevaFaseActiva = fases.fase + 1; 
+          const faseActiva = await Fases.findOneAndUpdate(
+            { fase: nuevaFaseActiva }, 
+            { $set: { faseActiva: true } }, 
+            { new: true } 
+          );
+      
+          if (!faseActiva) {
+            console.log("No se encontró la fase para activar.");
+          } else {
+            console.log("Fase activada con éxito:", faseActiva);
+          }
+        } catch (error) {
+          console.error("Error al actualizar las fases:", error.message);
+        }
+      }
+      
+      console.log(`Compra exitosa. Tokens vendidos en esta fase: ${fases.tokensVendidos}`);
       console.log(`Total pagado por los tokens: ${precioTotal.toFixed(2)}`);
   
     } catch (error) {
@@ -107,7 +130,7 @@ async function comprarTokens( comision,user,cantidadTokens) {
   
 
 async function actualizarFase() {
-  const faseActiva = await Preventa.findOne({ faseActiva: true });
+  const faseActiva = await Fases.findOne({ faseActiva: true });
   
   if (faseActiva) {
     // Desactivar la fase activa actual
@@ -115,7 +138,7 @@ async function actualizarFase() {
     await faseActiva.save();
     
     // Activar la siguiente fase
-    const siguienteFase = await Preventa.findOne({ fase: faseActiva.fase + 1 });
+    const siguienteFase = await Fases.findOne({ fase: faseActiva.fase + 1 });
     if (siguienteFase) {
       siguienteFase.faseActiva = true;
       await siguienteFase.save();

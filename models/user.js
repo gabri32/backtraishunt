@@ -31,6 +31,10 @@ const UserSchema = new mongoose.Schema({
   num_id:{
     type: String,
     required: true
+  },
+  referido:{
+    type:String,
+    required:false
   }
 
 

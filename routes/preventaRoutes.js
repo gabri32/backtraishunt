@@ -7,21 +7,29 @@ router.post('/registro', async (req, res) => {
   const params = req.body;
   try {
     const Registro = await registro(params);
-    res.json({ mensaje: `registro exitoso.` });
+    res.json({ mensaje:Registro });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
+
+
+
 // Ruta para comprar tokens
 router.post('/comprarTokens', async (req, res) => {
   const {  cantidadTokens } = req.body;
+  console.log(req.body)
   try {
-    const costo = await comprarTokens(cantidadTokens);
-    res.json({ mensaje: `Compra exitosa.` });
+    const costo = await comprarTokens(req.body);
+    res.json({ mensaje: "true" });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
+
+
+
+//ruta costo del token actual
 router.get('/costotoken', async (req, res) => {
     const cantidadTokens = parseInt(req.query.cantidadTokens, 10);
   
@@ -31,8 +39,8 @@ router.get('/costotoken', async (req, res) => {
     }
   
     try {
-      const costo = await costotoken(cantidadTokens);
-      res.json({ mensaje: 'Éxito', costo });
+      const valores = await costotoken(cantidadTokens);
+      res.json({ mensaje: 'Éxito', valores });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

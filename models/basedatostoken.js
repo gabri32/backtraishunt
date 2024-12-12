@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 // Definir el esquema para la preventa
-const preventaSchema = new mongoose.Schema({
+const fasesSchema = new mongoose.Schema({
   fase: {
     type: Number,
     required: true
@@ -42,6 +42,6 @@ const preventaSchema = new mongoose.Schema({
 });
 
 // Crear el modelo
-const Preventa = mongoose.model('Preventa', preventaSchema);
+const Fases = mongoose.model('fases', fasesSchema);
 
-module.exports = Preventa;
+module.exports = Fases;
