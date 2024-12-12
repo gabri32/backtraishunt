@@ -1,5 +1,5 @@
 const express = require('express');
-const { comprarTokens, actualizarFase,costotoken,registro } = require('../controllers/preventacontroller');
+const { comprarTokens, actualizarFase,costotoken,registro,disponiblesPorFase } = require('../controllers/preventacontroller');
 const router = express.Router();
 
 
@@ -27,6 +27,21 @@ router.post('/comprarTokens', async (req, res) => {
   }
 });
 
+router.get('/disponiblesPorFase', async (req, res) => {
+  try {
+    const cantidadDisponible = await disponiblesPorFase();
+    res.status(200).json({
+      mensaje: "Éxito",
+      cantidadDisponible,
+    });
+  } catch (error) {
+    console.error("Error en disponiblesPorFase:", error.message);
+    res.status(500).json({
+      mensaje: "Error al obtener los datos",
+      error: error.message,
+    });
+  }
+});
 
 
 //ruta costo del token actual

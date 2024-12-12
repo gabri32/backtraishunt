@@ -1,6 +1,20 @@
 const Fases = require('../models/basedatostoken');
 const User = require('../models/user');
+const transactions =require('../models/transactions')
 const { param } = require('../routes/preventaRoutes');
+
+
+async function disponiblesPorFase() {
+  const faseActiva = true;
+  try {
+    const fases = await Fases.findOne({ faseActiva }) 
+    return fases.tokensDisponibles; 
+  } catch (error) {
+    console.error('Error al obtener la fase activa:', error.message);
+    throw error; 
+  }
+}
+
 
 //function que permite regitrar o logear al usuario 
 async function registro(params) {
@@ -150,5 +164,6 @@ module.exports = {
   comprarTokens,
   actualizarFase,
   costotoken,
-  registro
+  registro,
+  disponiblesPorFase
 };
