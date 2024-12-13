@@ -81,8 +81,6 @@ async function costotoken(cantidadTokens) {
 
 async function comprarTokens( params) {
     try {
-
-console.log(params)
       // Validar que cantidadTokens sea positivo
       if (params.cantidadTokens <= 0) {
         throw new Error('La cantidad de tokens debe ser mayor a 0');
@@ -105,35 +103,120 @@ console.log(params)
         const precioUnitario = precioInicial + aumentoPorUnidad * unidadesVendidas;
         precioTotal += precioUnitario;
       }
+
       // Actualizar los valores en la base de datos
       fases.tokensVendidos = fases.tokensVendidos+params.cantidadTokens;
       fases.precioactual = precioInicial + aumentoPorUnidad * fases.tokensVendidos; 
       fases.tokensDisponibles=fases.tokensDisponibles-params.cantidadTokens
-
-      await fases.save();
-      if (fases.tokensDisponibles == 0) {
-        try {
-         
-          await Fases.updateMany({}, { $set: { faseActiva: false } });
-      
-         
-          const nuevaFaseActiva = fases.fase + 1; 
-          const faseActiva = await Fases.findOneAndUpdate(
-            { fase: nuevaFaseActiva }, 
-            { $set: { faseActiva: true } }, 
-            { new: true } 
-          );
-      
-          if (!faseActiva) {
-            console.log("No se encontró la fase para activar.");
-          } else {
-            console.log("Fase activada con éxito:", faseActiva);
-          }
-        } catch (error) {
-          console.error("Error al actualizar las fases:", error.message);
+      const wallet=params.wallet
+      const usuario = await User.findOne({ wallet });
+      console.log("datos del comprador",usuario)//datos de quien esta haceindo la transsaccion
+      if (usuario.referido.length>0)//si el usuario tuvo un referido cuando se registro 
+        {
+        const _id = usuario.referido//id del primer referido directo 5% comision usd
+       const referido1 = await User.findOne({_id})
+       console.log("referido de primer nivel",referido1)
+       const valor5por=(precioTotal/100)*5
+       //objeto con los datos de la wallet para el primer referido 5% de comision el dirtecto
+       const objreferido5$={
+        wallet:referido1.wallet,
+        comision:valor5por
+       }
+       if(referido1.referido.length>0){
+        const _id = referido1.referido//id del segundo referido directo 2% comision usd
+        const referido2 = await User.findOne({_id})
+        console.log("referido de primer nivel",referido2)
+        const valor2por=(precioTotal/100)*2
+        //objeto con los datos de la wallet para el primer referido 2% de comision el dirtecto
+        const objreferido2$={
+         wallet:referido2.wallet,
+         comision:valor2por.toFixed(2)
         }
+        if(referido2.referido.length>0){
+          const _id = referido2.referido//id del tercer referido directo 2% comision usd
+          const referido3 = await User.findOne({_id})
+          console.log("referido de primer nivel",referido3)
+          const valor3por=(precioTotal/100)*2
+          //objeto con los datos de la wallet para el tercer referido 2% de comision el dirtecto
+          const objreferido3$={
+           wallet:referido3.wallet,
+           comision:valor3por.toFixed(2)
+          }
+          if(referido3.referido.length>0){
+            const _id = referido3.referido//id del tercer referido directo 1% comision usd
+            const referido4 = await User.findOne({_id})
+            console.log("referido de primer nivel",referido3)
+            const valor4por=(precioTotal/100)*1
+            //objeto con los datos de la wallet para el tercer referido 1% de comision el dirtecto
+            const objreferido3$={
+             wallet:referido4.wallet,
+             comision:valor4por.toFixed(2)
+            }
+         }
+       }
+       }
+      
+      
+      }
+      if (fases.fase==1){
+        usuario.tokensComprados=params.cantidadTokens+usuario.tokensComprados
+        usuario.tokensporcomision=(params.cantidadTokens/100)*10+usuario.tokensporcomision
+        await usuario.save();
+      
+      }
+      if (fases.fase==2){
+        usuario.tokensComprados=params.cantidadTokens+usuario.tokensComprados
+        usuario.tokensporcomision=(params.cantidadTokens/100)*5+usuario.tokensporcomision
+        await usuario.save();
+       
+      }
+      if (fases.fase==3){
+        usuario.tokensComprados=params.cantidadTokens+usuario.tokensComprados
+        usuario.tokensporcomision=(params.cantidadTokens/100)*1+usuario.tokensporcomision
+        await usuario.save();
+        console.log("datooooooooooooos de comision en tokens",usuario.tokensComprados)
       }
       
+      if (fases.tokensDisponibles === 0) {
+        try {
+          // Desactivar solo las fases con fase 1, 2 y 3
+          await Fases.updateMany(
+            { fase: { $in: [1, 2, 3] } }, 
+            { $set: { faseActiva: false } }
+          );
+      
+          const nuevaFaseActiva = fases.fase + 1;
+          const MAX_FASE = 3; // Número máximo de fases
+      
+          if (nuevaFaseActiva <= MAX_FASE) {
+            const faseActiva = await Fases.findOneAndUpdate(
+              { fase: nuevaFaseActiva },
+              { $set: { faseActiva: true } },
+              { new: true }
+            );
+      
+            if (!faseActiva) {
+              console.warn("No se encontró la fase para activar:", nuevaFaseActiva);
+            } else {
+              console.log("Fase activada con éxito:", faseActiva);
+            }
+          } else {
+            console.info("No hay más fases para activar. Todas las fases han terminado.");
+          }
+        } catch (error) {
+          console.error("Error al actualizar las fases:", error);
+        }
+      } else {
+        console.info("Aún hay tokens disponibles. No se realizan cambios en las fases.");
+      }
+      
+      
+    
+      await fases.save();
+      const fecha=new Date()
+      await transactions.create({
+        datos:{fases,usuario,fecha}
+      })
       console.log(`Compra exitosa. Tokens vendidos en esta fase: ${fases.tokensVendidos}`);
       console.log(`Total pagado por los tokens: ${precioTotal.toFixed(2)}`);
   

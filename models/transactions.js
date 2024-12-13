@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
+const { Json } = require('sequelize/lib/utils');
 
 // Definir el esquema para la preventa
 const transactionSchema = new mongoose.Schema({
-  fase: {
-    type: Number,
+  datos: {
+    type:Object,
     required: true
   }
  

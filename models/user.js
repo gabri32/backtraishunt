@@ -12,6 +12,11 @@ const UserSchema = new mongoose.Schema({
     default: 0,
     required: false
   },
+  tokensporcomision: {
+    type: Number,
+    default: 0,
+    required: false
+  },
   tokensRetirados: {
     type: Number,
     default: 0
