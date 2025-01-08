@@ -38,6 +38,11 @@ const fasesSchema = new mongoose.Schema({
   precioini:{
     type: String,
     required: false       
+  },
+  valortotalVen:{
+    type: Number,
+    required: false,
+    default: 0
   }
 });
 

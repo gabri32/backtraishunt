@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { FLOAT, DOUBLE } = require('sequelize');
 
 // Definir el esquema para la preventa
 const UserSchema = new mongoose.Schema({
@@ -13,6 +14,11 @@ const UserSchema = new mongoose.Schema({
     required: false
   },
   tokensporcomision: {
+    type: Number,
+    default: 0,
+    required: false
+  },
+  usdcomision:{
     type: Number,
     default: 0,
     required: false
