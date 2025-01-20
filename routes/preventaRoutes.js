@@ -13,8 +13,6 @@ router.post('/registro', async (req, res) => {
   }
 });
 
-
-
 // Ruta para comprar tokens
 router.post('/comprarTokens', async (req, res) => {
   const {  cantidadTokens } = req.body;

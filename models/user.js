@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { FLOAT, DOUBLE } = require('sequelize');
+const { FLOAT, DOUBLE, NUMBER } = require('sequelize');
 
 // Definir el esquema para la preventa
 const UserSchema = new mongoose.Schema({
@@ -32,7 +32,7 @@ const UserSchema = new mongoose.Schema({
     required: false
   },
   preciocompra:{
-    type: String,
+    type: Number,
     default: 0
   },
   wallet:{

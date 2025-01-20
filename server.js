@@ -1,10 +1,12 @@
 const express = require('express');
+const dappRoutes = require("./routes/ldab");
 const conectarDB = require('./config/db');
 const preventaRoutes = require('./routes/preventaRoutes');
 const app = express();
 const port = 3000;
 const cors = require('cors');
-
+app.use(express.json());
+app.use(dappRoutes);
 
 
 const allowedOrigins = ['http://localhost:3000'];
@@ -21,7 +23,8 @@ const allowedOrigins = ['http://localhost:3000'];
 // }));
 
 // Middleware para manejar el cuerpo de las solicitudes
-app.use(express.json());
+
+app.use(cors());
 
 // Conectar a la base de datos
 conectarDB();
