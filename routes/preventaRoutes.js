@@ -15,11 +15,12 @@ router.post('/registro', async (req, res) => {
 
 // Ruta para comprar tokens
 router.post('/comprarTokens', async (req, res) => {
-  const {  cantidadTokens } = req.body;
-  console.log(req.body)
+  console.log(req.body.params)
   try {
-    const costo = await comprarTokens(req.body);
-    res.json({ mensaje: "true" });
+    const costo = await comprarTokens(req.body.params);
+    console.log("datooooooooooooooooooos",costo)
+    res.json({ mensaje: "true", costo });
+
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -53,6 +54,7 @@ router.get('/costotoken', async (req, res) => {
   
     try {
       const valores = await costotoken(cantidadTokens);
+      console.log(valores)
       res.json({ mensaje: 'Éxito', valores });
     } catch (error) {
       res.status(500).json({ error: error.message });

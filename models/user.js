@@ -6,7 +6,7 @@ const UserSchema = new mongoose.Schema({
 
   nombres_completos: {
     type: String,
-    required: true
+    required: false
   },
   tokensComprados: {
     type: Number,
@@ -35,13 +35,15 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  wallet:{
+  wallet: {
     type: String,
-    required: false
+    required: true,
+    unique: true,
   },
+  
   num_id:{
     type: String,
-    required: true
+    required: false
   },
   referido:{
     type:String,

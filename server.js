@@ -1,12 +1,12 @@
 const express = require('express');
-const dappRoutes = require("./routes/ldab");
+// const dappRoutes = require("./routes/ldab");
 const conectarDB = require('./config/db');
 const preventaRoutes = require('./routes/preventaRoutes');
 const app = express();
 const port = 3000;
 const cors = require('cors');
 app.use(express.json());
-app.use(dappRoutes);
+// app.use(dappRoutes);
 
 
 const allowedOrigins = ['http://localhost:3000'];
