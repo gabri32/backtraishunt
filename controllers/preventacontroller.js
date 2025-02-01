@@ -41,10 +41,7 @@ async function registro(params) {
 //calcular valor del token actual
 async function costotoken(cantidadTokens) {
   try{
-      if (cantidadTokens <= 0) {
-          throw new Error('La cantidad de tokens debe ser mayor a 0');
-        }else 
-        {
+  
           const faseActiva=true;
           const fases = await Fases.findOne({ faseActiva });
           const cantidadTotalObjetos = fases.cantidadTotal;
@@ -60,15 +57,17 @@ async function costotoken(cantidadTokens) {
               const precioUnitario = precioInicial + aumentoPorUnidad * unidadesVendidas;
               precioTotal += precioUnitario;
             }
-            const total={
-              precioTotal,cantidadTokens
-            }
-            return total
+            const total = cantidadTokens === 0 
+            ? { precioTotal: 0, cantidadTokens: 0 } 
+            : { precioTotal, cantidadTokens };
+          
+          return total;
+          
           }else{
             return "esa cantidad de tokens supera la disponible para la fase actual"
           }
         
-        }
+        
 
 
   }  catch(error){
