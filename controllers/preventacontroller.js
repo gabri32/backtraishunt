@@ -3,6 +3,7 @@ const User = require('../models/user');
 const transactions = require('../models/transactions')
 const { param } = require('../routes/preventaRoutes');
 //const { checkBalance } = require('../routes/ldab');
+const mongoose = require('mongoose');
 
 
 async function disponiblesPorFase() {
@@ -76,19 +77,22 @@ async function costotoken(cantidadTokens) {
   
 }
   
-async function verifyref(_id) {
+async function verifyref(id) {
   try {
-    const user = await User.findOne({ _id: _id });
+    const objectId = new mongoose.Types.ObjectId(id);
+    const user = await User.findOne({ _id: objectId });
+
     if (user) {
       return { success: true, user }; // Devuelve el usuario con éxito
     } else {
-      return { success: false, message: "No existe usuario con ese id" }; // Mensaje claro en caso de error
+      return { success: false, message: "No existe usuario con ese ID" }; // Mensaje claro en caso de error
     }
   } catch (error) {
     console.error('Error:', error.message);
     return { success: false, message: 'Error al buscar usuario' }; // Mensaje de error si algo sale mal
   }
 }
+
 
 async function comprarTokens(params) {
   try {

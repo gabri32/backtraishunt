@@ -1,7 +1,6 @@
 const express = require('express');
-const { comprarTokens, actualizarFase,costotoken,registro,disponiblesPorFase } = require('../controllers/preventacontroller');
+const { comprarTokens, actualizarFase,costotoken,registro,disponiblesPorFase,verifyref } = require('../controllers/preventacontroller');
 const router = express.Router();
-
 
 router.post('/registro', async (req, res) => {
   const params = req.body;
