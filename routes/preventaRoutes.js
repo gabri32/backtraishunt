@@ -42,7 +42,19 @@ router.get('/disponiblesPorFase', async (req, res) => {
   }
 });
 
-
+router.get('/verifyref', async (req, res) => {
+  const ref = req.query.ref;
+  try {
+    const refExiste = await verifyref(ref);
+    if (refExiste.success) {
+      res.json({ mensaje: 'Usuario encontrado', user: refExiste.user }); // Si el usuario existe
+    } else {
+      res.status(404).json({ mensaje: refExiste.message }); // Si el usuario no existe
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 //ruta costo del token actual
 router.get('/costotoken', async (req, res) => {
     const cantidadTokens = parseInt(req.query.cantidadTokens, 10);

@@ -1,1 +1,16 @@
+# Node modules
 node_modules/
+
+# Entornos
+.env/
+
+# Archivos de logs
+*.log
+
+# Archivos generados por el sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de editores específicos
+.vscode/
+.idea/

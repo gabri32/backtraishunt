@@ -76,9 +76,19 @@ async function costotoken(cantidadTokens) {
   
 }
   
-
-
-
+async function verifyref(_id) {
+  try {
+    const user = await User.findOne({ _id: _id });
+    if (user) {
+      return { success: true, user }; // Devuelve el usuario con éxito
+    } else {
+      return { success: false, message: "No existe usuario con ese id" }; // Mensaje claro en caso de error
+    }
+  } catch (error) {
+    console.error('Error:', error.message);
+    return { success: false, message: 'Error al buscar usuario' }; // Mensaje de error si algo sale mal
+  }
+}
 
 async function comprarTokens(params) {
   try {
@@ -125,6 +135,7 @@ async function comprarTokens(params) {
     const comisiones = [5, 2, 2, 1];
     
     for (let i = 0; i < comisiones.length; i++) {
+
       if (referidoActual.referido.length > 0) {
         referidoActual = await User.findOne({ _id: referidoActual.referido });
         const valorPorcentaje = (precioTotal / 100) * comisiones[i];
@@ -212,5 +223,6 @@ module.exports = {
   actualizarFase,
   costotoken,
   registro,
-  disponiblesPorFase
+  disponiblesPorFase,
+  verifyref
 };

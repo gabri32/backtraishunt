@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
-const mongoURI = 'mongodb://127.0.0.1:27017/basedatostoken'; // Cambia la URI según tu configuración
+const mongoURI = 'mongodb+srv://traishunt2020:6AB4FcawnKbyd8wS@cluster0.y2t97.mongodb.net/basedatostoken?retryWrites=true&w=majority&appName=Cluster0'
+; // Cambia la URI según tu configuración
 
 const conectarDB = async () => {
   try {
